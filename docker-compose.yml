@@ -1,0 +1,59 @@
+version: '3.8'
+services:
+  web:
+    platform: linux/x86_64 # for M1
+    build: ./web
+    ports:
+      - 8080:80
+      - 443:443
+    links:
+      - memcached1:mem1-con
+      - memcached2:mem2-con
+    privileged: true
+    networks:
+      repnw:
+
+# === not repcached ===
+#  memcached1:
+#    build: ./memcached
+#    ports:
+#      - "11211:11211"
+#    networks:
+#      repnw:
+#        ipv4_address: 10.254.249.89
+#
+#  memcached2:
+#    build: ./memcached
+#    ports:
+#      - "11212:11211"
+#    networks:
+#      repnw:
+#        ipv4_address: 10.254.249.90
+
+# === repcached ===
+  memcached1:
+    build: ./repcached
+    ports:
+      - "11211:11211"
+    environment:
+      - SLAVE=10.254.249.90
+    networks:
+      repnw:
+        ipv4_address: 10.254.249.89
+
+  memcached2:
+    build: ./repcached
+    ports:
+      - "11212:11211"
+    environment:
+      - SLAVE=10.254.249.89
+    networks:
+      repnw:
+        ipv4_address: 10.254.249.90
+
+networks:
+  repnw:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.254.249.0/24
